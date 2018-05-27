@@ -1,11 +1,20 @@
 
+def build_rekognition_dict(rekognition_json):
+    rek_dict = dict()
 
-def my_handler(event, context):
-    # jobs are completed here
-    # so we can get our jobs based on the name, get them from s3
-    # combine both
-    # save to bucket
+    if 'Persons' in rekognition_json:
+        for p in rekognition_json['Persons']:
+            timestamp = p['Timestamp']
+            name = 'Unknown person'
 
-    return {
-        'message': 'TODO message'
-    }
+            rek_dict[timestamp] = name
+
+    if 'Celebrities' in rekognition_json:
+        for cel in rekognition_json['Celebrities']:
+            timestamp = cel['Timestamp']
+            name = cel['Celebrity']['Name']
+
+            # might override the person timestamps, not an issue since this value gives more info
+            rek_dict[timestamp] = name
+
+    return rek_dict
