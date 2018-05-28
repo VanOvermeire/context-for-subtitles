@@ -41,13 +41,3 @@ class TestCombineHelper(unittest.TestCase):
         result = transcribe_helper.get_transcribe_job_name(key)
 
         self.assertEqual(result, 'tr-job-example')
-
-    def test_given_job_id_and_name_when_generate_s3_data_should_return_key_and_data(self):
-        celeb_job_id = 'celeb-job-id'
-        person_job_id = 'person-job-id'
-        job_name = 'tr-job-name'
-
-        key, data = transcribe_helper.generate_s3_key_and_data(celeb_job_id, person_job_id, job_name)
-
-        self.assertEqual(key, 'new-transcription-names/celeb-job-id')
-        self.assertEqual(data, 'PEOPLE_JOB_ID=person-job-id,TRANSCRIBE_JOB_NAME=tr-job-name')
