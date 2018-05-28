@@ -1,6 +1,7 @@
 def build_rekognition_dict(rekognition_json):
     rekognition_dict = dict()
 
+    # TODO separate call...
     if 'Persons' in rekognition_json:
         for p in rekognition_json['Persons']:
             timestamp = p['Timestamp']
@@ -35,6 +36,7 @@ def build_transcribe_dict(transcribe_json):
 
 def combine_transcribe_and_rekognition(transcribe_json, rekognition_json):
     result = ''
+    current_person = ''
 
     transcribe_dict = build_transcribe_dict(transcribe_json)
     rekognition_dict = build_rekognition_dict(rekognition_json)
@@ -44,12 +46,14 @@ def combine_transcribe_and_rekognition(transcribe_json, rekognition_json):
         i = 0
 
         while i <= highest_value:
-            if i in transcribe_dict and i in rekognition_dict:
+            if i in transcribe_dict and i in rekognition_dict and rekognition_dict[i] != current_person:
                 result += '[' + rekognition_dict[i] + '] ' + transcribe_dict[i] + ' '
+                current_person = rekognition_dict[i]
+            elif i in rekognition_dict and rekognition_dict[i] != current_person:
+                result += '[' + rekognition_dict[i] + '] '
+                current_person = rekognition_dict[i]
             elif i in transcribe_dict:
                 result += transcribe_dict[i] + ' '
-            elif i in rekognition_dict:
-                result += '[' + rekognition_dict[i] + '] '
 
             i += 1
 

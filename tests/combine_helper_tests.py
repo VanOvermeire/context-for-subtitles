@@ -1,36 +1,9 @@
 import unittest
-from helpers import transcribe_helper, combine_helper
+from helpers import combine_helper
 
 
-class TestHelpers(unittest.TestCase):
-    def test_given_mp3_extension_when_get_extension_should_return_extension(self):
-        key = 'some-valid-extension.mp3'
-
-        result = transcribe_helper.get_extension(key)
-
-        self.assertTrue(result, 'mp3')
-
-    def test_given_mp4_extension_when_get_extension_should_return_extension(self):
-        key = 'some-valid-extension.mp4'
-
-        result = transcribe_helper.get_extension(key)
-
-        self.assertTrue(result, 'mp4')
-
-    def test_given_invalid_extension_when_get_extension_should_return_none(self):
-        key = 'some-invalid-extension.txt'
-
-        result = transcribe_helper.get_extension(key)
-
-        self.assertTrue(result is None)
-
-    def test_when_generate_file_uri_should_return_correct_uri(self):
-        bucket = 'examplebucket'
-        key = 'example.mp4'
-
-        result = transcribe_helper.generate_file_uri(bucket, key)
-
-        self.assertEqual(result, 'https://s3-eu-west-1.amazonaws.com/examplebucket/example.mp4')
+# TODO rework once people becomes separate
+class TestCombineHelper(unittest.TestCase):
 
     def test_given_no_celebs_or_people_when_build_rekognition_dict_should_return_empty_dict(self):
         json_payload = {
@@ -296,3 +269,72 @@ class TestHelpers(unittest.TestCase):
         result = combine_helper.combine_transcribe_and_rekognition(transcribe_payload, rek_payload)
 
         self.assertEqual(result, '[Unknown Person] Some [Warren Buffett] transcript')
+
+    def test_given_items__and_celebs_when_combine_transcribe_and_rekognition_should_return_text_with_info_on_speakers_without_duplicating_speakers(self):
+        rek_payload = {
+            "Key": 636801.0000000003,
+            "Celebrities": [{
+                "Celebrity": {
+                    "Confidence": 97,
+                    "Id": "Z3He8D",
+                    "Name": "Warren Buffett",
+                },
+                "Timestamp": 33
+            }, {
+                "Celebrity": {
+                    "Confidence": 97,
+                    "Id": "Z3He8D",
+                    "Name": "Warren Buffett",
+                },
+                "Timestamp": 100
+            }, {
+                "Celebrity": {
+                    "Confidence": 52.999996185302734,
+                    "Id": "Z3He8D",
+                    "Name": "Not Warren Buffett",
+                },
+                "Timestamp": 1634
+            }],
+            "Persons": [{
+                "Person": {
+                    "Index": 0
+                },
+                "Timestamp": 33
+            }]}
+
+        transcribe_payload = {
+            "jobName": "example-job",
+            "results": {
+                "transcripts": [{
+                    "transcript": "Some more transcript"
+                }],
+                "items": [{
+                    "start_time": "0.500",
+                    "end_time": "0.800",
+                    "alternatives": [{
+                        "confidence": "1.0000",
+                        "content": "Some"
+                    }],
+                    "type": "pronunciation"
+                }, {
+                    "start_time": "0.900",
+                    "end_time": "1.000",
+                    "alternatives": [{
+                        "confidence": "1.0000",
+                        "content": "more"
+                    }],
+                    "type": "pronunciation"
+                }, {
+                    "start_time": "1.640",
+                    "end_time": "1.660",
+                    "alternatives": [{
+                        "confidence": "1.0000",
+                        "content": "transcript"
+                    }],
+                    "type": "pronunciation"
+                }]}}
+
+        result = combine_helper.combine_transcribe_and_rekognition(transcribe_payload, rek_payload)
+        print(result)
+
+        self.assertEqual(result, '[Warren Buffett] Some more [Not Warren Buffett] transcript')
