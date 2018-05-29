@@ -1,6 +1,6 @@
 import os
 import boto3
-from helpers import s3_helper, transcribe_helper
+from helpers import s3_helper, transcribe_helper, rekognition_helper
 
 s3_client = boto3.client('s3')
 rek_client = boto3.client('rekognition')
@@ -41,8 +41,10 @@ def my_handler(event, context):
 
         print('Celeb id is ' + celeb_job_id + ', person id is ' + person_job_id + ', and transcribe job name is ' + tr_job_name)
 
-        s3_key, s3_data = transcribe_helper.generate_s3_key_and_data(celeb_job_id, person_job_id, tr_job_name)
+        s3_key, s3_data = rekognition_helper.generate_s3_key_and_data(celeb_job_id, person_job_id, tr_job_name)
         s3_client.put_object(Body=s3_data, Bucket=bucket, Key=s3_key)
+    else:
+        print('No valid extension detected, ignoring file.')
 
     return {
         'message': 'Finished handling job for key ' + key

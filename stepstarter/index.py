@@ -8,6 +8,7 @@ s3_client = boto3.client('s3')
 
 def my_handler(event, context):
     job_id = sns_helper.extract_job_id(event)
+    print("Extracted" + str(job_id))
 
     s3_data = s3_helper.get_object_as_string(s3_client, 'FILL IN BUCKET', s3_helper.S3_NEW_JOB_FOLDER + job_id)  # TODO env var
 

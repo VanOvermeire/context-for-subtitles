@@ -1,3 +1,6 @@
+TRANSCRIPTION_PREFIX = 'tr-job-'
+
+
 def get_extension(key):
     key_parts = key.split('.')
     last_part = key_parts[len(key_parts) - 1]
@@ -14,4 +17,4 @@ def generate_file_uri(region, bucket, key):
 
 def get_transcribe_job_name(key):
     key = key[0:key.rfind(".")]
-    return 'tr-job-' + key
+    return TRANSCRIPTION_PREFIX + key

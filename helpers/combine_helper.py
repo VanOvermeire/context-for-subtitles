@@ -1,13 +1,13 @@
 def build_rekognition_dict(rekognition_json):
     rekognition_dict = dict()
 
-    # TODO separate call...
-    if 'Persons' in rekognition_json:
-        for p in rekognition_json['Persons']:
-            timestamp = p['Timestamp']
-            name = 'Unknown Person'
-
-            rekognition_dict[timestamp] = name
+    # TODO, not using this yet
+    # if 'Persons' in rekognition_json:
+    #     for p in rekognition_json['Persons']:
+    #         timestamp = p['Timestamp']
+    #         name = 'Unknown Person'
+    #
+    #         rekognition_dict[timestamp] = name
 
     if 'Celebrities' in rekognition_json:
         for cel in rekognition_json['Celebrities']:
