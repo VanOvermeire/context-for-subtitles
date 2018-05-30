@@ -2,8 +2,9 @@ import json
 
 
 def extract_job_id(event):
-    sns = event["Records"][0]['Sns']
-    job_id = sns['Message']["JobId"]
+    sns = event["Records"][0]['Sns']['Message']
+    sns_message = json.loads(sns)
+    job_id = sns_message["JobId"]
     return job_id
 
 
