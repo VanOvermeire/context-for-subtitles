@@ -11,8 +11,8 @@ def my_handler(event, context):
     extension = transcribe_helper.get_extension(key)
 
     if extension is not None:
-        celeb_job_name = 'celeb-job-for-' + key
-        people_job_name = 'people-job-for-' + key
+        celeb_job_name = rekognition_helper.generate_job_tag(key, 'celeb')
+        people_job_name = rekognition_helper.generate_job_tag(key, 'people')
 
         video = {'S3Object': {'Bucket': bucket, 'Name': key}}
 
