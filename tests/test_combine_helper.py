@@ -335,6 +335,35 @@ class TestCombineHelper(unittest.TestCase):
                 }]}}
 
         result = combine_helper.combine_transcribe_and_rekognition(transcribe_payload, rek_payload)
-        print(result)
 
         self.assertEqual(result, '[Warren Buffett] Some more [Not Warren Buffett] transcript')
+
+    def test_given_multiple_people_and_new_not_among_them_when_add_person_to_result_should_add_person_to_results_and_add_to_current(self):
+        combined_result = 'I am talking now [Warren Buffett, Not Warren Buffett] '
+        previous = 'Warren Buffett, Not Warren Buffett'
+        new = 'Another Person'
+
+        people, result = combine_helper.add_person_to_result(previous, new, combined_result)
+
+        self.assertEqual(people, 'Warren Buffett, Not Warren Buffett, Another Person')
+        self.assertEqual(result, 'I am talking now [Warren Buffett, Not Warren Buffett, Another Person] ')
+
+    def test_given_multiple_people_and_new_among_them_when_add_person_to_result_should_not_change_results(self):
+        combined_result = 'I am talking now [Warren Buffett, Not Warren Buffett] '
+        previous = 'Warren Buffett, Not Warren Buffett'
+        new = 'Warren Buffett'
+
+        people, result = combine_helper.add_person_to_result(previous, new, combined_result)
+
+        self.assertEqual(people, 'Warren Buffett, Not Warren Buffett')
+        self.assertEqual(result, 'I am talking now [Warren Buffett, Not Warren Buffett] ')
+
+    def test_given_a_person_talking_earlier_when_add_person_to_result_should_add_person_and_set_current(self):
+        combined_result = 'I am talking now [Warren Buffett, Not Warren Buffett], still talking'
+        previous = 'Warren Buffett'
+        new = 'Not Warren Buffett'
+
+        people, result = combine_helper.add_person_to_result(previous, new, combined_result)
+
+        self.assertEqual(people, 'Not Warren Buffett')
+        self.assertEqual(result, 'I am talking now [Warren Buffett, Not Warren Buffett], still talking [Not Warren Buffett] ')
