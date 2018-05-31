@@ -14,4 +14,6 @@ lambdas to be uploaded to.
 
 ### TODO's
 
+- add unknown people
 - add SAM yaml to automatically provision infrastructure
+- add email lambda?

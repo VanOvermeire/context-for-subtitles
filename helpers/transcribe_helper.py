@@ -1,3 +1,4 @@
+import json
 from urllib.request import urlopen
 
 TRANSCRIPTION_PREFIX = 'tr-job-'
@@ -25,4 +26,5 @@ def get_transcribe_job_name(key):
 def get_transcribe_data(transcription_response):
     tr_file_uri = transcription_response['TranscriptionJob']['Transcript']['TranscriptFileUri']
     tr_data_as_bytes = urlopen(tr_file_uri).read()
-    return tr_data_as_bytes.decode('utf-8')
+    tr_data_as_string = tr_data_as_bytes.decode('utf-8')
+    return json.loads(tr_data_as_string)
