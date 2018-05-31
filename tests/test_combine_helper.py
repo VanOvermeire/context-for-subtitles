@@ -51,8 +51,8 @@ class TestCombineHelper(unittest.TestCase):
         result = combine_helper.build_celebrity_rekognition_dict(json_payload)
 
         self.assertEqual(2, len(result))
-        self.assertEqual(result[33], 'Warren Buffett')
-        self.assertEqual(result[1634], 'Not Warren Buffett')
+        self.assertEqual(result[0], 'Warren Buffett')
+        self.assertEqual(result[1000], 'Not Warren Buffett')
 
     def test_given_no_items_when_build_transcribe_dict_should_return_empty_dict(self):
         json_payload = {
@@ -178,6 +178,7 @@ class TestCombineHelper(unittest.TestCase):
 
             # combine_helper.build_celebrity_rekognition_dict(r_json)
             result = combine_helper.combine_transcribe_and_rekognition(t_json, r_json)
+            # TODO actual test
 
 
     def test_given_multiple_people_and_new_not_among_them_when_add_person_to_result_should_add_person_to_results_and_add_to_current(self):

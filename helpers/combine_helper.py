@@ -1,21 +1,32 @@
-ONE_SECOND = 10
+ONE_SECOND = 1000
 
 
+# TODO use set instead of just pasting strings to avoid 'P.A, P.B' !- 'P.B., P.A.'
 def build_celebrity_rekognition_dict(rekognition_json):
     rekognition_dict = dict()
 
     if 'Celebrities' in rekognition_json:
         for cel in rekognition_json['Celebrities']:
             timestamp = cel['Timestamp']
+            timestamp = timestamp / ONE_SECOND  # one identification per second will do
+            timestamp = int(timestamp)
+
             name = cel['Celebrity']['Name']
 
-            if timestamp in rekognition_dict and name not in rekognition_dict[timestamp]:
-                name = rekognition_dict[timestamp] + ', ' + name
-            rekognition_dict[timestamp] = name
+            if timestamp not in rekognition_dict:
+                rekognition_dict[timestamp] = name
+            elif name not in rekognition_dict[timestamp]:
+                rekognition_dict[timestamp] = rekognition_dict[timestamp] + ', ' + name
 
-    print('Rekognition dict ' + str(rekognition_dict))
+    new_rekogntion_dict = dict()
 
-    return rekognition_dict
+    for old_key in rekognition_dict.keys():
+        new_key = old_key * ONE_SECOND
+        new_rekogntion_dict[new_key] = rekognition_dict[old_key]
+
+    print(new_rekogntion_dict)
+
+    return new_rekogntion_dict
 
 
 def build_transcribe_dict(transcribe_json):
