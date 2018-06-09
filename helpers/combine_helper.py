@@ -1,8 +1,7 @@
 ONE_SECOND = 1000
 
 
-# TODO use set instead of just pasting strings to avoid 'P.A, P.B' !- 'P.B., P.A.'
-# TODO fix double spaces before [ ]
+# TODO maybe go to seconds for both dictionaries
 def build_celebrity_rekognition_dict(rekognition_json):
     temporary_rekognition_dict = dict()
 
@@ -10,22 +9,25 @@ def build_celebrity_rekognition_dict(rekognition_json):
         for cel in rekognition_json['Celebrities']:
             timestamp = cel['Timestamp']
             timestamp = timestamp / ONE_SECOND  # one identification per second will do
-            timestamp = int(timestamp)
+            timestamp = int(round(timestamp))
 
             name = cel['Celebrity']['Name']
 
             if timestamp not in temporary_rekognition_dict:
-                temporary_rekognition_dict[timestamp] = name
+                name_set = set()
+                name_set.add(name)
+                temporary_rekognition_dict[timestamp] = name_set
             elif name not in temporary_rekognition_dict[timestamp]:
-                temporary_rekognition_dict[timestamp] = temporary_rekognition_dict[timestamp] + ', ' + name
+                name_set = temporary_rekognition_dict[timestamp]
+                name_set.add(name)
+
+                temporary_rekognition_dict[timestamp] = name_set
 
     rekogntion_dict = dict()
 
     for old_key in temporary_rekognition_dict.keys():
         new_key = old_key * ONE_SECOND  # reset the timestamps so we can match with transcription
         rekogntion_dict[new_key] = temporary_rekognition_dict[old_key]
-
-    print(rekogntion_dict)
 
     return rekogntion_dict
 
@@ -46,13 +48,12 @@ def build_transcribe_dict(transcribe_json):
 
             transcription_dict[timestamp] = text
 
-    print("Transcription dict " + str(transcription_dict))
     return transcription_dict
 
 
 def combine_transcribe_and_rekognition(transcribe_json, rekognition_json):
     combined_result = ''
-    previous_person = ''
+    previous_person = set()
 
     transcribe_dict = build_transcribe_dict(transcribe_json)
     rekognition_dict = build_celebrity_rekognition_dict(rekognition_json)
@@ -67,33 +68,51 @@ def combine_transcribe_and_rekognition(transcribe_json, rekognition_json):
         while i <= highest_value:
             if i in transcribe_dict and i in rekognition_dict:
                 previous_person, combined_result = add_person_to_result(previous_person, rekognition_dict[i], combined_result)
-                combined_result += transcribe_dict[i] + ' '
-            elif i in rekognition_dict and rekognition_dict[i]:
+                combined_result = add_transcription_to_result(transcribe_dict[i], combined_result)
+            elif i in rekognition_dict:
                 previous_person, combined_result = add_person_to_result(previous_person, rekognition_dict[i], combined_result)
             elif i in transcribe_dict:
-                combined_result += transcribe_dict[i] + ' '
+                combined_result = add_transcription_to_result(transcribe_dict[i], combined_result)
 
             i += 1
-
-        if len(combined_result):
-            combined_result = combined_result[0:len(combined_result) - 1]
-
-    print('Result:   ' + str(combined_result))
 
     return combined_result
 
 
 def add_person_to_result(previous_person, new_person, combined_results):
-    if is_end_of_results_people(combined_results):
-        if (new_person not in previous_person) and (previous_person not in new_person):
-            previous_person = previous_person + ', ' + new_person
-            combined_results = combined_results[0:combined_results.rfind('[')] + '[' + previous_person + '] '
+    if end_of_results_is_a_people_reference(combined_results):
+        if previous_person != new_person:
+            previous_person = previous_person.union(new_person)
+            combined_results = combined_results[0:combined_results.rfind('[')]
+            combined_results = add_person_with_whitespace_if_needed(previous_person, combined_results)
     elif new_person != previous_person:
         previous_person = new_person
-        combined_results += ' [' + new_person + '] '
+        combined_results = add_person_with_whitespace_if_needed(previous_person, combined_results)
 
     return previous_person, combined_results
 
 
-def is_end_of_results_people(combined_results):
-    return str(combined_results[len(combined_results) - 2: len(combined_results) - 1]) == ']'
+def add_person_with_whitespace_if_needed(to_add_set, combined_results):
+    to_add_list = sorted(to_add_set)
+    to_add = '[' + str(to_add_list).strip('[]').replace('\'', '') + ']'
+
+    if len(combined_results) == 0 or str(combined_results[len(combined_results) - 1: len(combined_results)]) == ' ':
+        combined_results += to_add
+    else:
+        combined_results += ' ' + to_add
+
+    return combined_results
+
+
+def add_transcription_to_result(to_add, combined_results):
+    if len(combined_results) == 0 or to_add == '.':
+        combined_results += to_add
+    else:
+        combined_results += ' ' + to_add
+
+    return combined_results
+
+
+def end_of_results_is_a_people_reference(combined_results):
+    trimmed_results = combined_results.strip()
+    return str(trimmed_results[len(trimmed_results) - 1: len(trimmed_results)]) == ']'
