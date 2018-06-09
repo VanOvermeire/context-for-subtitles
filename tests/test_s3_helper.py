@@ -19,12 +19,7 @@ class TestS3Helper(unittest.TestCase):
         self.assertEqual(result, 'results/example')
 
     def test_given_event_when_extract_bucket_and_key_from_event_should_get_bucket_and_key(self):
-        s3 = dict()
-        s3['bucket'] = {'name': 'example-bucket'}
-        s3['object'] = {'key': 'data/new-stuff'}
-
-        event = dict()
-        event['Records'] = [{'s3': s3}]
+        event = {'Records': [{'s3': {'bucket': {'name': 'example-bucket'}, 'object': {'key': 'data/new-stuff'}}}]}
 
         bucket, key = s3_helper.extract_bucket_and_key_from_event(event)
 

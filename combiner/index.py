@@ -17,7 +17,6 @@ def my_handler(event, context):
     transcription_response = tr_client.get_transcription_job(TranscriptionJobName=transcription_name)
     transcription_response_as_json = transcribe_helper.get_transcribe_data(transcription_response)
 
-    print('TEMP: ' + str(celebrity_response))
     combine_result = combine_helper.combine_transcribe_and_rekognition(transcription_response_as_json, celebrity_response)
     key = s3_helper.generate_key_for_combine_result(transcription_name)
 

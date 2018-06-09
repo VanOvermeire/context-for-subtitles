@@ -12,7 +12,6 @@ def my_handler(event, context):
 
     if extension is not None:
         celeb_job_name = rekognition_helper.generate_job_tag(key, 'celeb')
-        people_job_name = rekognition_helper.generate_job_tag(key, 'people')
 
         video = {'S3Object': {'Bucket': bucket, 'Name': key}}
 
@@ -25,22 +24,12 @@ def my_handler(event, context):
             JobTag=celeb_job_name
         )
 
-        # person_response = rek_client.start_person_tracking(
-        #     Video=video,
-        #     NotificationChannel={
-        #         'SNSTopicArn': 'arn:aws:sns:eu-west-1:262438358359:AmazonRekognition-Completed',   # os.environ['PEOPLE_SNS'],
-        #         'RoleArn': 'arn:aws:iam::262438358359:role/AWS-Rekognition-SNS-Role' # os.environ
-        #     },
-        #     JobTag=people_job_name
-        # )
-
         celeb_job_id = celeb_response['JobId']
-        person_job_id = 'fake-person-id'  # person_response['JobId']
         tr_job_name = transcribe_helper.get_transcribe_job_name(key)
 
-        print('Celeb id is ' + celeb_job_id + ', person id is ' + person_job_id + ', and transcribe job name is ' + tr_job_name)
+        print('Celeb id is ' + celeb_job_id + ', and transcribe job name is ' + tr_job_name)
 
-        s3_key, s3_data = rekognition_helper.generate_s3_key_and_data(celeb_job_id, person_job_id, tr_job_name)
+        s3_key, s3_data = rekognition_helper.generate_s3_key_and_data(celeb_job_id, tr_job_name)
         print('Saving our job data under ' + s3_key + ' in bucket ' + bucket)
         s3_client.put_object(Body=s3_data, Bucket=bucket, Key=s3_key)
     else:

@@ -5,7 +5,6 @@ from helpers import sns_helper
 
 class TestSnsHelper(unittest.TestCase):
     def test_given_an_sns_payload_when_extract_job_id_should_get_the_job_id(self):
-
         json_payload = {
             "Records": [
                 {

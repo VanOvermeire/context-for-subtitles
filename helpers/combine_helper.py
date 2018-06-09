@@ -2,8 +2,9 @@ ONE_SECOND = 1000
 
 
 # TODO use set instead of just pasting strings to avoid 'P.A, P.B' !- 'P.B., P.A.'
+# TODO fix double spaces before [ ]
 def build_celebrity_rekognition_dict(rekognition_json):
-    rekognition_dict = dict()
+    temporary_rekognition_dict = dict()
 
     if 'Celebrities' in rekognition_json:
         for cel in rekognition_json['Celebrities']:
@@ -13,20 +14,20 @@ def build_celebrity_rekognition_dict(rekognition_json):
 
             name = cel['Celebrity']['Name']
 
-            if timestamp not in rekognition_dict:
-                rekognition_dict[timestamp] = name
-            elif name not in rekognition_dict[timestamp]:
-                rekognition_dict[timestamp] = rekognition_dict[timestamp] + ', ' + name
+            if timestamp not in temporary_rekognition_dict:
+                temporary_rekognition_dict[timestamp] = name
+            elif name not in temporary_rekognition_dict[timestamp]:
+                temporary_rekognition_dict[timestamp] = temporary_rekognition_dict[timestamp] + ', ' + name
 
-    new_rekogntion_dict = dict()
+    rekogntion_dict = dict()
 
-    for old_key in rekognition_dict.keys():
-        new_key = old_key * ONE_SECOND
-        new_rekogntion_dict[new_key] = rekognition_dict[old_key]
+    for old_key in temporary_rekognition_dict.keys():
+        new_key = old_key * ONE_SECOND  # reset the timestamps so we can match with transcription
+        rekogntion_dict[new_key] = temporary_rekognition_dict[old_key]
 
-    print(new_rekogntion_dict)
+    print(rekogntion_dict)
 
-    return new_rekogntion_dict
+    return rekogntion_dict
 
 
 def build_transcribe_dict(transcribe_json):
@@ -90,6 +91,7 @@ def add_person_to_result(previous_person, new_person, combined_results):
     elif new_person != previous_person:
         previous_person = new_person
         combined_results += ' [' + new_person + '] '
+
     return previous_person, combined_results
 
 
