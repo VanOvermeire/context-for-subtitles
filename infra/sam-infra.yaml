@@ -1,0 +1,68 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: If you want to use this yaml file, change the env vars and codeuris
+Resources:
+  VideoBucket:
+    Type: AWS::S3::Bucket
+  AmazonRekognitionTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        Subscription:
+        - Protocol: lambda
+          Endpoint: !GetAtt Stepstarter.Arn
+  VideoAddedTopic:
+        Type: AWS::SNS::Topic
+        Properties:
+          Subscription:
+          - Protocol: lambda
+            Endpoint: !GetAtt RekognitionJob.Arn
+          Subscription:
+          - Protocol: lambda
+            Endpoint: !GetAtt TranscribeJob.Arn
+  RekognitionJob:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.my_handler
+      Runtime: python3.6
+      CodeUri: s3://yourbucket/lambda-zips/rekognitionjob.zip
+      Role: arn:aws:iam::*:role/lambda-rekognition-plus-s3-full-access
+      Environment:
+        Variables:
+          CELEB_SNS: arn:aws:sns:eu-west-1:*:AmazonRekognition-Celebs-Completed
+          REK_ROLE: roletoallowrekognitiontoaccesssnstopic
+  TranscribeJob:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.my_handler
+      Runtime: python3.6
+      CodeUri: s3://yourbucket/lambda-zips/speech.zip
+      Role: arn:aws:iam::*:role/lambda-transcribe-full-access
+      Environment:
+        Variables:
+          REGION: eu-west-1
+  Stepstarter:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.my_handler
+      Runtime: python3.6
+      CodeUri: s3://yourbucket/lambda-zips/stepstarter.zip
+      Role: arn:aws:iam::*:role/lambda-stepfunctions-plus-s3
+      Environment:
+        Variables:
+          BUCKET: !Ref VideoBucket
+          STEP_FUNCTION: ref-to-correct-step-function
+  Checker:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.my_handler
+      Runtime: python3.6
+      CodeUri: s3://yourbucket/lambda-zips/checker.zip
+      Role: arn:aws:iam::*:role/lambda-transcribe-read-only-role
+  Combiner:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.my_handler
+      Runtime: python3.6
+      CodeUri: s3://yourbucket/lambda-zips/combiner.zip
+      Role: arn:aws:iam::*:role/lambda-rekognition-plus-transcribe-plus-s3
+      Timeout: 10

@@ -1,4 +1,3 @@
-import json
 import unittest
 from helpers import combine_helper
 
@@ -261,16 +260,6 @@ class TestCombineHelper(unittest.TestCase):
         result = combine_helper.combine_transcribe_and_rekognition(transcribe_payload, rek_payload)
 
         self.assertEqual('[Person A] Some more transcript [Person B, Person C] here [Person A]', result)
-
-    def test_using_actual_json_outputs(self):
-        with open('../examples/celebrity_output.json') as rekognition, open('../examples/transcribe_output.json') as transcribe:
-            r_json = json.load(rekognition)
-            t_json = json.load(transcribe)
-
-            # combine_helper.build_celebrity_rekognition_dict(r_json)
-            result = combine_helper.combine_transcribe_and_rekognition(t_json, r_json)
-            print(result)
-            # TODO actual test
 
     def test_given_multiple_people_and_new_not_among_them_when_add_person_to_result_should_add_person_to_results_and_set_to_current(self):
         combined_result = 'I am talking now [Person A, Person B]'

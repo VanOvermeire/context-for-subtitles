@@ -1,7 +1,7 @@
 ONE_SECOND = 1000
 
 
-# TODO maybe go to seconds for both dictionaries
+# TODO alternatively, go to seconds for both dictionaries
 def build_celebrity_rekognition_dict(rekognition_json):
     temporary_rekognition_dict = dict()
 
